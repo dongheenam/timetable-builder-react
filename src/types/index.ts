@@ -1,18 +1,17 @@
-export type Staff = {
-  code: string;
-  name: string;
+export type StaffLookup = {
+  [code: string]: string;
 };
 
 export type Lesson = {
   day: number;
   period: number;
   room: string;
-  staff: null | Staff;
+  staff: null | string;
 };
 
 export type Course = {
   code: string;
-  staff: null | Staff;
+  staff: null | string;
   sharesTimetableWith: null | string;
   lessons: Lesson[];
 };
