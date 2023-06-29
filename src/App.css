@@ -1,0 +1,17 @@
+#app {
+  background-color: var(--gray1);
+  min-height: 100vh;
+  min-height: 100svh;
+
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  padding: var(--gap-lg) var(--gap-md);
+
+  width: min(1000px, 95%);
+  margin-inline: auto;
+  background-color: var(--gray2);
+}

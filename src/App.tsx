@@ -5,6 +5,8 @@ import Home from './Home';
 import Edit from './pages/edit';
 import View from './pages/view';
 
+import './App.css';
+
 function AppLayout() {
   return (
     <div id="app">
