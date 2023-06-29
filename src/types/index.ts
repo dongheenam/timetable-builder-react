@@ -1,4 +1,4 @@
-export type StaffLookup = {
+export type Staffs = {
   [code: string]: string;
 };
 
@@ -6,17 +6,14 @@ export type Lesson = {
   day: number;
   period: number;
   room: string;
-  staff: null | string;
+  staffCode: null | string;
 };
 
-export type Course = {
-  code: string;
-  staff: null | string;
-  sharesTimetableWith: null | string;
-  lessons: Lesson[];
-};
-
-export type CourseGroup = {
-  name: string;
-  courses: Course[];
+export type Courses = {
+  [code: string]: {
+    courseGroup: string;
+    staffCode: null | string;
+    sharesTimetableWith: null | string;
+    lessons: Lesson[];
+  };
 };
