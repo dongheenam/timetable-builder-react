@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { createSelectors } from './utils';
-import type { StaffLookup, Lesson, Course, CourseGroup } from '../types';
+import type { StaffLookup, Lesson, Course, CourseGroup } from '@/types';
 
 export type StoreState = {
   staffLookup: StaffLookup;
@@ -18,7 +18,7 @@ const storeBase = create<StoreState>()(
 
     // persist options
     {
-      name: 'timetable-builder-2.0.0',
+      name: `timetable-builder-${APP_VERSION}`,
       getStorage: () => localStorage,
     }
   )
