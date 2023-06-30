@@ -13,5 +13,17 @@
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
+  align-items: center;
   gap: var(--gap-sm);
+}
+.card[aria-expanded='true'] .toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* TODO: add transition effects */
+.content-block {
+  display: none;
+}
+.card[aria-expanded='true'] .content-block {
+  display: block;
 }

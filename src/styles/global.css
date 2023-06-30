@@ -28,6 +28,7 @@ button,
 textarea,
 select {
   font: inherit;
+  text-decoration: none;
 }
 
 p,
@@ -64,4 +65,8 @@ ol {
 :is(ul, ol) :is(ul, ol) {
   margin-top: 0;
   margin-bottom: 0;
+}
+
+:focus {
+  outline: 3px solid var(--primary8);
 }

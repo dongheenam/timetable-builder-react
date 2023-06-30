@@ -1,0 +1,19 @@
+.button {
+  display: inline-flex;
+  gap: var(--gap-sm);
+  align-items: center;
+
+  color: var(--btn-color, var(--gray11));
+  background-color: var(--btn-bg, var(--bg));
+  border: 1px solid var(--btn-bd, transparent);
+  border-radius: var(--border-radius-sm);
+
+  cursor: pointer;
+}
+.button:hover {
+  color: var(--btn--hover-color, var(--gray12));
+  background-color: var(--btn--hover-bg, var(--gray4));
+}
+.button:active {
+  background-color: var(--btn--active-bg, var(--gray5));
+}

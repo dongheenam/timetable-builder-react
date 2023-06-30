@@ -1,0 +1,4 @@
+.button {
+  padding: var(--gap-sm) var(--gap-md);
+  font-weight: 600;
+}
