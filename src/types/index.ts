@@ -6,13 +6,13 @@ export type Lesson = {
   day: number;
   period: number;
   room: string;
-  staffCode: null | string;
+  staffCode?: string;
 };
 
 export type Courses = {
   [code: string]: {
-    courseGroup: string;
-    staffCode: null | string;
+    group: string;
+    staffCode: string;
     sharesTimetableWith: null | string;
     lessons: Lesson[];
   };
