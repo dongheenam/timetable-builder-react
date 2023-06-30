@@ -95,6 +95,8 @@
 
   --bg-color: var(--gray1);
   --text-color: var(--gray12);
+  --white: white;
+  --black: black;
 
   /* TYPOGRAPHY */
   /* ref: https://github.com/system-fonts/modern-font-stacks */

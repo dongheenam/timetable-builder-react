@@ -1,5 +1,5 @@
 #app {
-  background-color: var(--gray1);
+  background-color: var(--gray3);
   min-height: 100vh;
   min-height: 100svh;
 
@@ -13,5 +13,4 @@ main {
 
   width: min(1000px, 95%);
   margin-inline: auto;
-  background-color: var(--gray2);
 }
