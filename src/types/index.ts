@@ -17,3 +17,5 @@ export type Courses = {
     lessons: Lesson[];
   };
 };
+
+export type CourseArray = (Courses[string] & { code: string })[];

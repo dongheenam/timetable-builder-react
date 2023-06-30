@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import type { Staffs, Courses } from '@/types';
+import type { Staffs, Courses, CourseArray } from '@/types';
+import { DUMMY_COURSES } from './dummyCourses';
 
 export type StoreState = {
   courses: Courses;
@@ -10,6 +11,7 @@ export type StoreState = {
   updateCourseGroup: (oldName: string, newName: string) => void;
   createCoursesByGroup: (group: string) => (courseCodes: string[]) => void;
   getCoursesByGroup: (group: string) => Courses;
+  getCourseArrayByGroup: (group: string) => CourseArray;
   removeCoursesByGroup: (name: string) => void;
   updateCourse: (
     code: string
@@ -28,74 +30,7 @@ const EMPTY_COURSE = {
 const useStore = create<StoreState>()(
   // persist(
   (set, get) => ({
-    courses: {
-      SE0701: {
-        group: 'Year 7 Science',
-        staffCode: 'QED',
-        sharesTimetableWith: null,
-        lessons: [
-          {
-            day: 1,
-            period: 2,
-            room: 'SN101',
-          },
-          {
-            day: 2,
-            period: 5,
-            room: 'SN101',
-          },
-          {
-            day: 3,
-            period: 4,
-            room: 'SN101',
-          },
-        ],
-      },
-      SE0702: {
-        group: 'Year 7 Science',
-        staffCode: 'JXT',
-        sharesTimetableWith: null,
-        lessons: [
-          {
-            day: 1,
-            period: 2,
-            room: 'SN101',
-          },
-          {
-            day: 2,
-            period: 5,
-            room: 'SN101',
-          },
-          {
-            day: 3,
-            period: 4,
-            room: 'SN101',
-          },
-        ],
-      },
-      SE0801: {
-        group: 'Year 8 Science',
-        staffCode: 'ABC',
-        sharesTimetableWith: null,
-        lessons: [
-          {
-            day: 1,
-            period: 2,
-            room: 'SN101',
-          },
-          {
-            day: 2,
-            period: 5,
-            room: 'SN101',
-          },
-          {
-            day: 3,
-            period: 4,
-            room: 'SN101',
-          },
-        ],
-      },
-    },
+    courses: DUMMY_COURSES,
     staffs: {},
     getCourseGroups: () => {
       const { courses } = get();
@@ -136,6 +71,14 @@ const useStore = create<StoreState>()(
         }
         return acc;
       }, {} as Courses);
+    },
+    getCourseArrayByGroup: (group) => {
+      if (!group) return [];
+      const courses = get().getCoursesByGroup(group);
+      return Object.entries(courses).map(([code, course]) => ({
+        code,
+        ...course,
+      }));
     },
     removeCoursesByGroup: (group) => {
       const { courses } = get();
