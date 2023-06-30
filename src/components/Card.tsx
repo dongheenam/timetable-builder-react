@@ -29,7 +29,7 @@ export default function Card({
   const Title = titleElement;
   return (
     <div className={styles['card']} aria-expanded={isExpanded}>
-      <div className={styles['title-block']}>
+      <div className={styles['title-block']} onClick={handleToggle}>
         <Title>{title}</Title>
         {toggleable && (
           <ButtonIcon
