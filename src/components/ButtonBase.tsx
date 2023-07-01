@@ -1,6 +1,6 @@
 import styles from './ButtonBase.module.css';
 
-export type Props = {
+export type Props = React.HTMLAttributes<HTMLButtonElement> & {
   color?: 'gray' | 'primary' | 'green' | 'yellow' | 'red';
   variant?: 'default' | 'outline' | 'subtle' | 'filled';
   label?: string;

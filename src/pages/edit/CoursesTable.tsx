@@ -1,5 +1,6 @@
 import ButtonIcon from '@/components/ButtonIcon';
 import Editable from '@/components/Editable';
+import LazyInput from '@/components/LazyInput';
 import { CourseArray } from '@/types';
 import { IconX } from '@tabler/icons-react';
 
@@ -81,9 +82,10 @@ function CourseRow({ course, update, remove }: CourseRowProps) {
       {COLUMNS.map((column) => (
         <td key={column.key}>
           {column.editable ? (
-            <Editable
-              value={courseData[column.key].toString()}
-              setValue={(value: string) => update({ [column.key]: value })}
+            <LazyInput
+              type="text"
+              value={courseData[column.key]}
+              setValue={(value) => update({ [column.key]: value })}
             />
           ) : (
             <span>{courseData[column.key]}</span>
@@ -95,6 +97,7 @@ function CourseRow({ course, update, remove }: CourseRowProps) {
           label={`delete course ${course.code}`}
           onClick={remove}
           icon={<IconX />}
+          tabIndex={-1}
         />
       </td>
     </tr>
