@@ -13,10 +13,10 @@ export type StoreState = {
   getCoursesByGroup: (group: string) => Courses;
   getCourseArrayByGroup: (group: string) => CourseArray;
   removeCoursesByGroup: (name: string) => void;
-  updateCourse: (
-    code: string
-  ) => (courseData: Partial<Courses[string]>) => void;
-  deleteCourse: (code: string) => void;
+  updateCourses: (coursesData: {
+    [code: string]: Partial<Courses[string]>;
+  }) => void;
+  deleteCourses: (codes: string[]) => void;
   setStaff: (code: string, name: string) => void;
 };
 
@@ -89,25 +89,25 @@ const useStore = create<StoreState>()(
       codesToDelete.forEach((code) => delete newCourses[code]);
       set({ courses: newCourses });
     },
-    updateCourse: (code) => (courseData) => {
+    updateCourses: (coursesData) => {
       set((state) => {
-        const course = state.courses[code];
-        if (!course) {
-          throw new Error(`Course ${code} does not exist`);
+        const courses = { ...state.courses };
+        for (const code in coursesData) {
+          if (!(code in state.courses)) {
+            throw new Error(`Course ${code} does not exist`);
+          }
+          courses[code] = { ...courses[code], ...coursesData[code] };
         }
         return {
           ...state,
-          courses: {
-            ...state.courses,
-            [code]: { ...course, ...courseData },
-          },
+          courses,
         };
       });
     },
-    deleteCourse: (code) => {
+    deleteCourses: (code) => {
       set((state) => {
         const courses = { ...state.courses };
-        delete courses[code];
+        code.forEach((code) => delete courses[code]);
         return { ...state, courses };
       });
     },
