@@ -22,11 +22,18 @@ export default function Editable(props: PassiveInputProps | ActiveInputProps) {
     }
   }, [isEditing]);
 
-  const handleBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsEditing(false);
-    if (isActive) {
-      props.setValue(e.target.value);
+  const submit = (newValue: string) => {
+    try {
+      if (isActive && props.value !== newValue) {
+        props.setValue(newValue);
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error(error);
     }
+  };
+  const handleBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
+    submit(e.target.value);
   };
   const handleClick = () => {
     setIsEditing(true);
@@ -40,10 +47,7 @@ export default function Editable(props: PassiveInputProps | ActiveInputProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case 'Enter':
-        setIsEditing(false);
-        if (isActive) {
-          props.setValue(e.currentTarget.value);
-        }
+        submit(e.currentTarget.value);
         break;
     }
   };
