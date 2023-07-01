@@ -10,11 +10,17 @@ export default function EditCourses({ group }: Props) {
   const courses = groupExists
     ? useStore((state) => state.getCourseArrayByGroup(group))
     : [];
-  const updateCourses = useStore((state) => state.updateCourses);
+  const updateCourse = useStore((state) => state.updateCourse);
+  const deleteCourse = useStore((state) => state.deleteCourse);
   const title = groupExists ? `Courses for ${group}` : `Create a group`;
   return (
     <Card title={title} titleElement="h3" open>
-      <CoursesTable group={group} courses={courses} />
+      <CoursesTable
+        courses={courses}
+        updateCourse={updateCourse}
+        deleteCourse={deleteCourse}
+      />
+      {JSON.stringify(courses)}
     </Card>
   );
 }

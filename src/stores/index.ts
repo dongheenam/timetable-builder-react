@@ -13,10 +13,10 @@ export type StoreState = {
   getCoursesByGroup: (group: string) => Courses;
   getCourseArrayByGroup: (group: string) => CourseArray;
   removeCoursesByGroup: (name: string) => void;
-  updateCourses: (coursesData: {
-    [code: string]: Partial<Courses[string]>;
-  }) => void;
-  deleteCourses: (codes: string[]) => void;
+  updateCourse: (
+    code: string
+  ) => (courseUpdate: Partial<CourseArray[number]>) => void;
+  deleteCourse: (code: string) => void;
   setStaff: (code: string, name: string) => void;
 };
 
@@ -89,25 +89,36 @@ const useStore = create<StoreState>()(
       codesToDelete.forEach((code) => delete newCourses[code]);
       set({ courses: newCourses });
     },
-    updateCourses: (coursesData) => {
-      set((state) => {
-        const courses = { ...state.courses };
-        for (const code in coursesData) {
+    updateCourse:
+      (code) =>
+      ({ code: newCode, ...courseData }) => {
+        set((state) => {
+          const courses = { ...state.courses };
           if (!(code in state.courses)) {
             throw new Error(`Course ${code} does not exist`);
           }
-          courses[code] = { ...courses[code], ...coursesData[code] };
-        }
-        return {
-          ...state,
-          courses,
-        };
-      });
-    },
-    deleteCourses: (code) => {
+
+          const updateCode = newCode !== undefined && newCode !== code;
+          if (updateCode && newCode in courses) {
+            throw new Error(`Course ${newCode} already exists`);
+          }
+          const newCourse = { ...courses[code], ...courseData };
+          if (updateCode) {
+            delete courses[code];
+            courses[newCode] = newCourse;
+          } else {
+            courses[code] = newCourse;
+          }
+          return {
+            ...state,
+            courses,
+          };
+        });
+      },
+    deleteCourse: (code) => {
       set((state) => {
         const courses = { ...state.courses };
-        code.forEach((code) => delete courses[code]);
+        delete courses[code];
         return { ...state, courses };
       });
     },
