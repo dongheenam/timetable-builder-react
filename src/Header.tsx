@@ -13,7 +13,7 @@ export default function Header() {
     <header className={styles['header']}>
       <div className={styles['title-block']}>
         <span className={styles['title']}>Timetable builder</span>
-        <span>v2</span>
+        <span>v{APP_VERSION}</span>
       </div>
       <nav className={styles['nav-block']}>
         <ul className={styles['nav-list']}>

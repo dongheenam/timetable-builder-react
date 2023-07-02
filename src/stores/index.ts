@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+// import { persist } from 'zustand/middleware';
 
 import type { Staffs, Courses, CourseArray } from '@/types';
 import { DUMMY_COURSES } from './dummyCourses';
