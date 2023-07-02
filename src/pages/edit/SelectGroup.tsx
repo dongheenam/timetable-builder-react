@@ -15,7 +15,7 @@ export default function SelectGroup({ groups, setSelectedGroup }: Props) {
   ];
   return (
     <Card title="Groups" titleElement="h3" open>
-      <select onChange={handleChange}>
+      <select onChange={handleChange} size={10}>
         {options.map(({ name, value }) => (
           <option key={value} value={value}>
             {name}

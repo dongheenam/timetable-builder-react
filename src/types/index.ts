@@ -9,7 +9,7 @@ export type Lesson = {
   staffCode?: string;
 };
 
-export type Courses = {
+export type CourseDict = {
   [code: string]: {
     group: string;
     staffCode: string;
@@ -18,4 +18,5 @@ export type Courses = {
   };
 };
 
-export type CourseArray = (Courses[string] & { code: string })[];
+export type Course = CourseDict[string] & { code: string };
+export type CourseArray = Course[];

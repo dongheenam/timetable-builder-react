@@ -4,7 +4,7 @@
   flex-direction: column;
   gap: var(--gap-md);
 
-  background-color: var(--gray2);
+  background-color: var(--gray1);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-xs);
 }
@@ -15,8 +15,6 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--gap-sm);
-
-  cursor: pointer;
 }
 .card[aria-expanded='true'] .toggle-icon {
   transform: rotate(180deg);

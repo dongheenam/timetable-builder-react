@@ -1,17 +1,17 @@
 import { create } from 'zustand';
 // import { persist } from 'zustand/middleware';
 
-import type { Staffs, Courses, CourseArray } from '@/types';
+import type { Staffs, CourseDict, CourseArray, Course } from '@/types';
 import { DUMMY_COURSES } from './dummyCourses';
 
 export type StoreState = {
-  courses: Courses;
+  courses: CourseDict;
   staffs: Staffs;
   getCourseGroups: () => string[];
+  createCourse: (course: Course) => void;
   updateCourseGroup: (oldName: string, newName: string) => void;
-  createCoursesByGroup: (group: string) => (courseCodes: string[]) => void;
-  getCoursesByGroup: (group: string) => Courses;
-  getCourseArrayByGroup: (group: string) => CourseArray;
+  getCourse: (code: string) => Course;
+  getCoursesByGroup: (group: string) => CourseArray;
   removeCoursesByGroup: (name: string) => void;
   updateCourse: (
     code: string
@@ -20,7 +20,7 @@ export type StoreState = {
   setStaff: (code: string, name: string) => void;
 };
 
-const EMPTY_COURSE = {
+export const EMPTY_COURSE: CourseDict[string] = {
   group: '',
   staffCode: '',
   sharesTimetableWith: null,
@@ -53,32 +53,36 @@ const useStore = create<StoreState>()(
         return { ...state, courses };
       });
     },
-    createCoursesByGroup: (group) => (courseCodes) => {
-      if (group in get().courses) {
-        throw new Error(`Course group ${group} already exists`);
+    createCourse: (course) => {
+      const { code, ...courseData } = course;
+      if (!code || !courseData.group) {
+        throw new Error('Course code and group are required');
       }
-      const courseSet = courseCodes.reduce((acc, code) => {
-        acc[code] = { ...EMPTY_COURSE, group };
-        return acc;
-      }, {} as Courses);
-      set((state) => ({ courses: { ...state.courses, ...courseSet } }));
+      set((state) => {
+        const courses = { ...state.courses };
+        if (code in courses) {
+          throw new Error(`Course ${code} already exists`);
+        }
+        courses[code] = { ...EMPTY_COURSE, ...courseData };
+        return { ...state, courses };
+      });
+    },
+    getCourse: (code) => {
+      if (!code) {
+        throw new Error('Course code is required');
+      }
+      const course = get().courses[code];
+      return { code, ...course };
     },
     getCoursesByGroup: (group) => {
+      if (!group) return [];
       const { courses } = get();
       return Object.keys(courses).reduce((acc, code) => {
         if (courses[code].group === group) {
-          acc[code] = courses[code];
+          acc.push({ code, ...courses[code] });
         }
         return acc;
-      }, {} as Courses);
-    },
-    getCourseArrayByGroup: (group) => {
-      if (!group) return [];
-      const courses = get().getCoursesByGroup(group);
-      return Object.entries(courses).map(([code, course]) => ({
-        code,
-        ...course,
-      }));
+      }, [] as CourseArray);
     },
     removeCoursesByGroup: (group) => {
       const { courses } = get();
