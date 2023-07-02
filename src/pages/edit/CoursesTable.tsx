@@ -3,19 +3,10 @@ import { IconEdit, IconPlus, IconX } from '@tabler/icons-react';
 
 import ButtonIcon from '@/components/ButtonIcon';
 import LazyInput from '@/components/LazyInput';
-import { CourseArray, Course } from '@/types';
-import { EMPTY_COURSE } from '@/stores';
-
-type Props = {
-  courses: CourseArray;
-  updateCourse: (code: string) => (courseData: Partial<Course>) => void;
-  deleteCourse: (code: string) => void;
-  selectCourse: (course: Course) => void;
-  createCourse: (courseData: Omit<Course, 'group'>) => void;
-};
+import { Course, courseSchema } from '@/types';
 
 // to avoid Typescript error when accessing courseData using the keys
-type KEY = 'code' | 'lessons' | 'staffCode' | 'actions';
+type KEY = 'code' | 'staffCode' | 'actions';
 const COLUMNS: { key: KEY; header: string }[] = [
   {
     header: 'Class',
@@ -26,21 +17,24 @@ const COLUMNS: { key: KEY; header: string }[] = [
     key: 'staffCode',
   },
   {
-    header: 'Lessons',
-    key: 'lessons',
-  },
-  {
     header: 'Actions',
     key: 'actions',
   },
 ];
 
+type Props = {
+  courses: Course[];
+  addCourse: (courseData: Partial<Course>) => void;
+  updateCourse: (code: string) => (courseUpdate: Partial<Course>) => void;
+  removeCourse: (code: string) => void;
+  selectCourse: (code: string) => void;
+};
 export default function CoursesTable({
   courses,
-  createCourse,
+  addCourse,
   updateCourse,
+  removeCourse,
   selectCourse,
-  deleteCourse,
 }: Props) {
   const headers = COLUMNS.map((column) => column.header);
   return (
@@ -58,11 +52,11 @@ export default function CoursesTable({
             key={course.code}
             course={course}
             update={updateCourse(course.code)}
-            select={() => selectCourse(course)}
-            remove={() => deleteCourse(course.code)}
+            select={() => selectCourse(course.code)}
+            remove={() => removeCourse(course.code)}
           />
         ))}
-        <EmptyRow create={createCourse} />
+        <EmptyRow create={addCourse} />
       </tbody>
     </table>
   );
@@ -90,7 +84,6 @@ function CourseRow({ course, update, select, remove }: CourseRowProps) {
         setValue={(value) => update({ staffCode: value })}
       />
     ),
-    lessons: <>{course.lessons.length}</>,
     actions: (
       <>
         <ButtonIcon
@@ -118,25 +111,28 @@ function CourseRow({ course, update, select, remove }: CourseRowProps) {
   );
 }
 
+type CourseForm = Pick<Course, 'code' | 'staffCode'>;
 type EmptyRowProps = {
-  create: (courseData: Omit<Course, 'group'>) => void;
+  create: (courseData: Partial<Course>) => void;
 };
 function EmptyRow({ create }: EmptyRowProps) {
-  const [localCourse, updateLocalCourse] = useReducer(
-    (prev: Course, next: Partial<Course>) => ({
+  const [courseForm, updateCourseForm] = useReducer(
+    (prev: CourseForm, next: Partial<CourseForm>) => ({
       ...prev,
       ...next,
     }),
-
     {
       code: '',
-      ...EMPTY_COURSE,
+      staffCode: '',
     }
   );
   const handleSubmit = () => {
     try {
-      create(localCourse);
-      updateLocalCourse({ code: '', ...EMPTY_COURSE });
+      const formValues = courseSchema
+        .pick({ code: true, staffCode: true })
+        .parse(courseForm);
+      create(formValues);
+      updateCourseForm({ code: '', staffCode: '' });
     } catch (error) {
       console.error(error);
     }
@@ -145,18 +141,17 @@ function EmptyRow({ create }: EmptyRowProps) {
     code: (
       <LazyInput
         type="text"
-        value={localCourse.code}
-        setValue={(value) => updateLocalCourse({ code: value })}
+        value={courseForm.code}
+        setValue={(value) => updateCourseForm({ code: value })}
       />
     ),
     staffCode: (
       <LazyInput
         type="text"
-        value={localCourse.staffCode}
-        setValue={(value) => updateLocalCourse({ staffCode: value })}
+        value={courseForm.staffCode}
+        setValue={(value) => updateCourseForm({ staffCode: value })}
       />
     ),
-    lessons: <></>,
     actions: (
       <ButtonIcon
         label={`add course`}

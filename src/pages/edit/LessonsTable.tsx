@@ -3,7 +3,7 @@ import { IconPlus, IconX } from '@tabler/icons-react';
 
 import ButtonIcon from '@/components/ButtonIcon';
 import LazyInput from '@/components/LazyInput';
-import { Lesson } from '@/types';
+import { EMPTY_LESSON, Lesson, lessonSchema } from '@/types';
 
 type KEY = 'day' | 'period' | 'staffCode' | 'room' | 'actions';
 const COLUMNS: { key: KEY; header: string }[] = [
@@ -32,15 +32,15 @@ const COLUMNS: { key: KEY; header: string }[] = [
 type Props = {
   staffCode: string;
   lessons: Lesson[];
+  addLesson: (lessonData: Omit<Lesson, 'code'>) => void;
   updateLesson: (index: number) => (lessonData: Partial<Lesson>) => void;
-  createLesson: (lesson: Lesson) => void;
   removeLesson: (index: number) => void;
 };
 export default function LessonsTable({
   staffCode,
   lessons,
+  addLesson,
   updateLesson,
-  createLesson,
   removeLesson,
 }: Props) {
   const headers = COLUMNS.map((column) => column.header);
@@ -62,7 +62,7 @@ export default function LessonsTable({
             remove={() => removeLesson(index)}
           />
         ))}
-        <EmptyRow create={createLesson} defaultLesson={{ staffCode }} />
+        <EmptyRow create={addLesson} defaultLesson={{ staffCode }} />
       </tbody>
     </table>
   );
@@ -119,19 +119,12 @@ function LessonRow({ lesson, update, remove }: LessonRowProps) {
   );
 }
 
-const EMPTY_LESSON = {
-  day: undefined,
-  period: undefined,
-  room: '',
-  staffCode: '',
-};
-
 type EmptyRowProps = {
   defaultLesson: Partial<Lesson>;
-  create: (lessonData: Lesson) => void;
+  create: (lessonData: Omit<Lesson, 'code'>) => void;
 };
 function EmptyRow({ create, defaultLesson }: EmptyRowProps) {
-  const [localLesson, updateLocalLesson] = useReducer(
+  const [lessonForm, setLessonForm] = useReducer(
     (lesson: Partial<Lesson>, update: Partial<Lesson>) => ({
       ...lesson,
       ...update,
@@ -143,11 +136,11 @@ function EmptyRow({ create, defaultLesson }: EmptyRowProps) {
   );
   const handleSubmit = () => {
     try {
-      if (!localLesson.day || !localLesson.period) {
-        throw new Error("Can't create lesson without day or period");
-      }
-      create(localLesson as Lesson);
-      updateLocalLesson({
+      const lesson = lessonSchema
+        .pick({ day: true, period: true, room: true, staffCode: true })
+        .parse(lessonForm);
+      create(lesson);
+      setLessonForm({
         ...EMPTY_LESSON,
         ...defaultLesson,
       });
@@ -158,26 +151,26 @@ function EmptyRow({ create, defaultLesson }: EmptyRowProps) {
   const rowElements = {
     day: (
       <LazyInput
-        value={localLesson.day}
-        setValue={(value) => updateLocalLesson({ day: value })}
+        value={lessonForm.day}
+        setValue={(value) => setLessonForm({ day: value })}
       />
     ),
     period: (
       <LazyInput
-        value={localLesson.period}
-        setValue={(value) => updateLocalLesson({ period: value })}
+        value={lessonForm.period}
+        setValue={(value) => setLessonForm({ period: value })}
       />
     ),
     room: (
       <LazyInput
-        value={localLesson.room}
-        setValue={(value) => updateLocalLesson({ room: value })}
+        value={lessonForm.room}
+        setValue={(value) => setLessonForm({ room: value })}
       />
     ),
     staffCode: (
       <LazyInput
-        value={localLesson.staffCode}
-        setValue={(value) => updateLocalLesson({ staffCode: value })}
+        value={lessonForm.staffCode}
+        setValue={(value) => setLessonForm({ staffCode: value })}
       />
     ),
     actions: (

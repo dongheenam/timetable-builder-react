@@ -10,8 +10,8 @@ export const lessonSchema = z.object({
     .trim()
     .toUpperCase()
     .min(1, { message: 'Course code is required' }),
-  day: z.number(),
-  period: z.number(),
+  day: z.coerce.number(),
+  period: z.coerce.number(),
   room: z.string().trim().toUpperCase(),
   staffCode: z.string().trim().toUpperCase(),
 });

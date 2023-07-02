@@ -47,4 +47,5 @@ export const DUMMY_LESSONS: LessonsDict = {
       room: 'SN201',
     },
   ],
+  SE0801: [],
 };

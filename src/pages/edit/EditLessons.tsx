@@ -5,39 +5,44 @@ import { Lesson } from '@/types';
 import LessonsTable from './LessonsTable';
 
 type Props = {
-  courseCode: string;
+  code: string;
 };
 
 const sortLesson = (a: Lesson, b: Lesson) => (a.day < b.day ? -1 : 1);
 
-export default function EditLessons({ courseCode }: Props) {
-  const course = useStore((state) => state.getCourse(courseCode));
-  const lessons = course.lessons;
-  const updateCourse = useStore((state) => state.updateCourse(courseCode));
-  const updateLessons = (lessons: Lesson[]) => updateCourse({ lessons });
+export default function EditLessons({ code }: Props) {
+  const staffCode = useStore((state) => state.getCourse(code).staffCode);
+  const lessons = useStore((state) => state.getLessons(code).sort(sortLesson));
+  const addLesson = useStore((state) => state.addLesson);
+  const setLessons = useStore((state) => state.setLessons);
 
+  const handleAdd = (lessonData: Omit<Lesson, 'code'>) => {
+    addLesson({
+      code,
+      ...lessonData,
+    });
+  };
   const updateLesson = (index: number) => (lessonData: Partial<Lesson>) => {
     const newLessons = [...lessons];
     newLessons[index] = {
       ...newLessons[index],
       ...lessonData,
     };
-    updateLessons(newLessons);
+    setLessons(code)(newLessons);
   };
-  const createLesson = (lesson: Lesson) => updateLessons([...lessons, lesson]);
   const removeLesson = (index: number) => {
     const newLessons = [...lessons];
     newLessons.splice(index, 1);
-    updateLessons(newLessons);
+    setLessons(code)(newLessons);
   };
 
   return (
-    <Card title={`Edit Timetable for ${courseCode}`} titleElement="h3">
+    <Card title={`Edit Timetable for ${code}`} titleElement="h3">
       <LessonsTable
-        staffCode={course.staffCode}
-        lessons={lessons.sort(sortLesson)}
+        staffCode={staffCode}
+        lessons={lessons}
+        addLesson={handleAdd}
         updateLesson={updateLesson}
-        createLesson={createLesson}
         removeLesson={removeLesson}
       />
     </Card>
