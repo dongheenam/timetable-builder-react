@@ -13,9 +13,9 @@ const sortCourse = (a: Course, b: Course) => (a.code < b.code ? -1 : 1);
 
 export default function EditCourses({ group, selectCourse }: Props) {
   const courses = useStore((state) => state.getCoursesByGroup(group));
-  const createCourse = useStore((state) => state.createCourse);
+  const createCourse = useStore((state) => state.addCourse);
   const updateCourse = useStore((state) => state.updateCourse);
-  const deleteCourse = useStore((state) => state.deleteCourse);
+  const deleteCourse = useStore((state) => state.removeCourse);
   const title = `Courses for ${group}`;
   return (
     <Card title={title} titleElement="h3" open>

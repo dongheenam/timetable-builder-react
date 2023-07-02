@@ -1,37 +1,115 @@
 import { create } from 'zustand';
 // import { persist } from 'zustand/middleware';
 
-import type { Staffs, CourseDict, CourseArray, Course } from '@/types';
-import { DUMMY_COURSES } from './dummyCourses';
+import {
+  StaffDict,
+  CourseDict,
+  Course,
+  LessonsDict,
+  Lesson,
+  courseSchema,
+  lessonSchema,
+} from '@/types';
+import { DUMMY_COURSES, DUMMY_LESSONS } from './dummyCourses';
 
 export type StoreState = {
   courses: CourseDict;
-  staffs: Staffs;
-  getCourseGroups: () => string[];
-  createCourse: (course: Course) => void;
-  updateCourseGroup: (oldName: string, newName: string) => void;
+  lessons: LessonsDict;
+  staffs: StaffDict;
+  addCourse: (course: Course) => void;
   getCourse: (code: string) => Course;
-  getCoursesByGroup: (group: string) => CourseArray;
-  removeCoursesByGroup: (name: string) => void;
-  updateCourse: (
-    code: string
-  ) => (courseUpdate: Partial<CourseArray[number]>) => void;
-  deleteCourse: (code: string) => void;
-  setStaff: (code: string, name: string) => void;
-};
-
-export const EMPTY_COURSE: CourseDict[string] = {
-  group: '',
-  staffCode: '',
-  sharesTimetableWith: null,
-  lessons: [],
+  updateCourse: (code: string) => (courseUpdate: Partial<Course>) => void;
+  removeCourse: (code: string) => void;
+  getCourseGroups: () => string[];
+  getCoursesByGroup: (group: string) => Course[];
+  renameCourseGroup: (oldName: string, newName: string) => void;
+  removeCoursesBy: (filter: Partial<Course>) => void;
+  getLessons: (code: string) => Lesson[];
+  addLesson: (lesson: Lesson) => void;
+  setLessons: (code: string) => (lessonsData: Omit<Lesson, 'code'>[]) => void;
 };
 
 const useStore = create<StoreState>()(
   // persist(
   (set, get) => ({
     courses: DUMMY_COURSES,
+    lessons: DUMMY_LESSONS,
     staffs: {},
+    addCourse: (course) => {
+      const { code, ...courseData } = courseSchema.parse(course);
+      set((state) => {
+        const courses = { ...state.courses };
+        const lessons = { ...state.lessons };
+        if (code in courses) {
+          throw new Error(`Course ${code} already exists`);
+        }
+        courses[code] = courseData;
+        lessons[code] = [];
+        return { ...state, courses, lessons };
+      });
+    },
+    getCourse: (code) => {
+      if (!code) {
+        throw new Error('Course code is required');
+      }
+      const courses = get().courses;
+      if (!(code in courses)) {
+        throw new Error(`Course ${code} does not exist`);
+      }
+      return { code, ...courses[code] };
+    },
+    updateCourse: (code) => (courseUpdate) => {
+      const { code: newCode, ...courseData } = courseSchema
+        .partial()
+        .parse(courseUpdate);
+
+      set((state) => {
+        const courses = { ...state.courses };
+        if (!(code in state.courses)) {
+          throw new Error(`Course ${code} does not exist`);
+        }
+
+        const updateCode = newCode !== undefined && newCode !== code;
+        // if course code is not updated
+        const newCourse = { ...courses[code], ...courseData };
+        if (!updateCode) {
+          courses[code] = newCourse;
+
+          return { ...state, courses };
+        }
+
+        // if course code is updated
+        if (newCode in courses) {
+          throw new Error(`Course ${newCode} already exists`);
+        }
+
+        courses[newCode] = newCourse;
+        delete courses[code];
+
+        const lessons = { ...state.lessons };
+        lessons[newCode] = lessons[code];
+        delete lessons[code];
+
+        return {
+          ...state,
+          courses,
+          lessons,
+        };
+      });
+    },
+    removeCourse: (code) => {
+      set((state) => {
+        const courses = { ...state.courses };
+        const lessons = { ...state.lessons };
+        if (!(code in courses)) {
+          throw new Error(`Course ${code} does not exist`);
+        }
+
+        delete courses[code];
+        delete lessons[code];
+        return { ...state, courses, lessons };
+      });
+    },
     getCourseGroups: () => {
       const { courses } = get();
       return Object.keys(courses).reduce((acc, code) => {
@@ -42,7 +120,17 @@ const useStore = create<StoreState>()(
         return acc;
       }, [] as string[]);
     },
-    updateCourseGroup: (oldName, newName) => {
+    getCoursesByGroup: (group) => {
+      if (!group) return [];
+      const { courses } = get();
+      return Object.keys(courses).reduce((acc, code) => {
+        if (courses[code].group === group) {
+          acc.push({ code, ...courses[code] });
+        }
+        return acc;
+      }, [] as Course[]);
+    },
+    renameCourseGroup: (oldName, newName) => {
       set((state) => {
         const courses = { ...state.courses };
         Object.keys(courses).forEach((code) => {
@@ -53,84 +141,55 @@ const useStore = create<StoreState>()(
         return { ...state, courses };
       });
     },
-    createCourse: (course) => {
-      const { code, ...courseData } = course;
-      if (!code || !courseData.group) {
-        throw new Error('Course code and group are required');
+    removeCoursesBy: (filter) => {
+      const { code, ...filterData } = courseSchema.partial().parse(filter);
+      if (code) {
+        get().removeCourse(code);
       }
-      set((state) => {
-        const courses = { ...state.courses };
-        if (code in courses) {
-          throw new Error(`Course ${code} already exists`);
-        }
-        courses[code] = { ...EMPTY_COURSE, ...courseData };
-        return { ...state, courses };
-      });
-    },
-    getCourse: (code) => {
-      if (!code) {
-        throw new Error('Course code is required');
-      }
-      const course = get().courses[code];
-      return { code, ...course };
-    },
-    getCoursesByGroup: (group) => {
-      if (!group) return [];
-      const { courses } = get();
-      return Object.keys(courses).reduce((acc, code) => {
-        if (courses[code].group === group) {
-          acc.push({ code, ...courses[code] });
-        }
-        return acc;
-      }, [] as CourseArray);
-    },
-    removeCoursesByGroup: (group) => {
-      const { courses } = get();
-      const codesToDelete = Object.keys(courses).filter(
-        (code) => courses[code].group === group
-      );
-      const newCourses = { ...courses };
-      codesToDelete.forEach((code) => delete newCourses[code]);
-      set({ courses: newCourses });
-    },
-    updateCourse:
-      (code) =>
-      ({ code: newCode, ...courseData }) => {
-        set((state) => {
-          const courses = { ...state.courses };
-          if (!(code in state.courses)) {
-            throw new Error(`Course ${code} does not exist`);
-          }
 
-          const updateCode = newCode !== undefined && newCode !== code;
-          if (updateCode && newCode in courses) {
-            throw new Error(`Course ${newCode} already exists`);
-          }
-          const newCourse = { ...courses[code], ...courseData };
-          if (updateCode) {
-            delete courses[code];
-            courses[newCode] = newCourse;
-          } else {
-            courses[code] = newCourse;
-          }
-          return {
-            ...state,
-            courses,
-          };
-        });
-      },
-    deleteCourse: (code) => {
       set((state) => {
-        const courses = { ...state.courses };
-        delete courses[code];
-        return { ...state, courses };
+        const { courses, lessons } = state;
+        const courseCodes = Object.keys(courses);
+        const codesToDelete = courseCodes.filter((code) =>
+          (Object.keys(filterData) as (keyof CourseDict[string])[]).every(
+            (key) => courses[code][key] === filter[key]
+          )
+        );
+        for (const code in codesToDelete) {
+          delete courses[code];
+          delete lessons[code];
+        }
+        return { ...state, courses, lessons };
       });
     },
-    setStaff: (code, name) => {
-      set((state) => ({
-        ...state,
-        staffs: { ...state.staffs, [code]: name },
-      }));
+    getLessons: (code) => {
+      const { lessons } = get();
+      if (!(code in lessons)) {
+        throw new Error(`Lessons for ${code} does not exist`);
+      }
+      return lessons[code].map((lesson) => ({ code, ...lesson }));
+    },
+    addLesson: (lesson) => {
+      const { code, ...lessonData } = lessonSchema.parse(lesson);
+      set((state) => {
+        const lessons = { ...state.lessons };
+        if (!(code in state.lessons)) {
+          throw new Error(`Lessons for ${code} does not exist`);
+        }
+        lessons[code].push(lessonData);
+        return { ...state, lessons };
+      });
+    },
+    setLessons: (code) => (lessons) => {
+      const lessonsData = lessons.map((lesson) => lessonSchema.parse(lesson));
+      set((state) => {
+        const lessons = { ...state.lessons };
+        if (!(code in state.lessons)) {
+          throw new Error(`Lessons for ${code} does not exist`);
+        }
+        lessons[code] = lessonsData;
+        return { ...state, lessons };
+      });
     },
   })
 
